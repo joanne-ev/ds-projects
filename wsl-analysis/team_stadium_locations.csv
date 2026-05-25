@@ -1,25 +1,25 @@
-Team,Stadium,Region,Longitude,Latitude
-Arsenal,Meadow Park,London,-0.272486,51.661931
-Arsenal,Emirates Stadium,London,-0.109112,51.554867
-Aston Villa,Poundland Bescot Stadium,West Midlands,-1.9909,52.5655
-Aston Villa,Villa Park,West Midlands,-1.884722,52.509167
-Brighton & Hove Albion,Broadfield Stadium,East of England,-0.195389,51.099764
-Brighton & Hove Albion,Falmer Stadium,East of England,-0.084357,50.861782
-Bristol City,Ashton Gate Stadium,South West,-2.6203341,51.4401049
-Chelsea,Stamford Bridge,London,-0.19139,51.481834
-Chelsea,Kingsmeadow,South West England,-0.281540,51.405770
-Crystal Palace,Selhurst Park,London,-0.086084,51.398338
-Crystal Palace,VBS Community Stadium,South East,-0.2044,51.3675
-Everton,Goodison Park,North West,-2.966681,53.438751
-Everton,Walton Hall Park,North West,-2.952,53.448
-Leicester City,King Power Stadium,East Midlands,-1.14277,52.62064
-Liverpool,Anfield,North West,-2.9608278,53.4308194
-Liverpool,St Helens Stadium,North West,-2.726343,53.447571
-Liverpool,Prenton Park,North West,-2.97794,53.41058
-Manchester City,Etihad Stadium,North West,-2.200941,53.483135
-Manchester City,Joie Stadium,North West,-2.19277,53.481111
-Manchester United,Leigh Sports Village Stadium,North West,-2.529,53.491
-Manchester United,Old Trafford,North West,-2.292279,53.463493
-Tottenham Hotspur,Tottenham Hotspur Stadium,London,-0.067007,51.604252
-Tottenham Hotspur,Brisbane Road,London,-0.013053,51.560266
-West Ham United,Chigwell Construction Stadium,London,-0.0164443,51.5386672
+Team,Stadium,latitude,longitude
+Arsenal,Emirates Stadium,51.5550404,-0.1083997
+Arsenal,Meadow Park,51.6620315,-0.2724395
+Aston Villa,Poundland Bescot Stadium,52.5655014,-1.9904976
+Aston Villa,Villa Park,52.5091264,-1.8850354
+Brighton & Hove Albion,Broadfield Stadium,51.0995727,-0.1947428
+Brighton & Hove Albion,Falmer Stadium,50.8615471,-0.0836931
+Bristol City,Ashton Gate Stadium,51.4398694,-2.6203405
+Chelsea,Kingsmeadow,51.4051256,-0.2819645
+Chelsea,Stamford Bridge,51.4816869,-0.1910336
+Crystal Palace,Selhurst Park,51.3982429,-0.0852551
+Crystal Palace,VBS Community Stadium,-0.2044,51.3675
+Everton,Goodison Park,53.4386898,-2.9664193
+Everton,Walton Hall Park,53.4491409,-2.9531938
+Leicester City,King Power Stadium,52.6203970,-1.1423352
+Liverpool,Anfield,53.4309011,-2.9609719
+Liverpool,Prenton Park,53.3736791,-3.0326170
+Liverpool,St Helens Stadium,53.4475324,-2.7259061
+Manchester City,Joie Stadium,53.4812663,-2.1928127
+Manchester City,Etihad Stadium,53.4831448,-2.2005273
+Manchester United,Leigh Sports Village Stadium,53.4897223,-2.5301637
+Manchester United,Old Trafford,53.4631096,-2.2913865
+Tottenham Hotspur,Brisbane Road,51.5600713,-0.0125999
+Tottenham Hotspur,Tottenham Hotspur Stadium,51.6041570,-0.0662604
+West Ham United,Chigwell Construction Stadium,-0.0164443,51.5386672
