@@ -1,6 +1,2 @@
-# Data Science Projects
-
-1. WSL Analysis
-  - Industry: Sports (Football)
-  - Analysis of the different statistics within the Women's Super League
-  - Libraries: Polars, Plotly, Haystack AI
+# ds-projects
+Data science projects in industries I'm interested in (e.g., football, finance, psychology)
