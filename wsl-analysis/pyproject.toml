@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
-    "marimo>=0.23.1",
-    "plotly>=6.7.0",
+    "marimo>=0.23.3",
+    "plotly[express]>=6.7.0",
     "polars>=1.39.3",
 ]
