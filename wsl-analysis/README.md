@@ -1,5 +1,7 @@
 # Predicting Game Results in the Women's Super League (WSL)
 
+[![Open notebook in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/joanne-ev/ds-projects/blob/wsl-analysis/wsl-analysis/notebook.py)
+
 ## Background
 
 The Women's Super League (WSL) is the highest level of women's football in England and one of the most popular leagues in women's football.
