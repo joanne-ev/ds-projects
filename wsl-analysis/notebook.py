@@ -1,10 +1,10 @@
 import marimo
 
-__generated_with = "0.23.6"
-app = marimo.App()
+__generated_with = "0.23.8"
+app = marimo.App(width="columns")
 
 
-@app.cell
+@app.cell(column=0)
 def _():
     import marimo as mo
 
@@ -229,7 +229,7 @@ def _(df):
     return
 
 
-@app.cell(hide_code=True)
+@app.cell(column=1, hide_code=True)
 def _(mo):
     mo.md(r"""
     # Data Visualisations
