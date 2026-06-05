@@ -1,6 +1,6 @@
 # Predicting Game Results in the Women's Super League (WSL)
 
-[![Open notebook in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/joanne-ev/ds-projects/blob/wsl-analysis/wsl-analysis/notebook.py)
+[![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/joanne-ev/ds-projects/blob/wsl-analysis/wsl-analysis/notebook.py)
 
 ## Background
 
@@ -15,4 +15,5 @@ An analysis plan was created on the whiteboard application Apple Freeform and ca
 ## Learnings
 
 ### Data Types
+
 > [!NOTE] Source: https://pola.rs/posts/understanding-polars-data-types/
