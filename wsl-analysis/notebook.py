@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.8"
+__generated_with = "0.23.6"
 app = marimo.App(width="columns")
 
 
@@ -25,9 +25,11 @@ def _(mo):
 def _():
     # Packages
     import polars as pl
-    import sys, csv
+    import sys 
+    import csv
+    from IPython.display import display
 
-    return csv, pl, sys
+    return csv, display, pl, sys
 
 
 @app.cell
@@ -193,12 +195,6 @@ def _(data, pl, stadium_latitude, stadium_longitude, stadium_region):
 
 
 @app.cell
-def _(data_new):
-    data_new
-    return
-
-
-@app.cell
 def _(data_new, pl):
     # Order categories within a categorical variable
     kickoff_enum = pl.Enum(['Morning', 'Afternoon', 'Evening'])  # Enum is an ordered categorical data type
@@ -277,8 +273,17 @@ def _():
 @app.cell
 def _(df, pl, px, team_colours):
     stadium_count = df['Stadium'].value_counts().sort(by='Stadium').rename({'count': 'Number of Matches'})
+
     stadium_loc_df = pl.read_csv('team_stadium_locations.csv').join(stadium_count, on=['Stadium'], how='inner').sort(by='Team')
-    _fig = px.scatter_map(data_frame=stadium_loc_df, lat='latitude', lon='longitude', color='Team', color_discrete_map=team_colours, hover_name='Stadium', hover_data={'latitude': False, 'longitude': False}, size='Number of Matches', zoom=4.5, title='Stadium Map', subtitle='Map of the stadiums located in England sized by the number of total matches hosted in the stadium')
+
+    _fig = px.scatter_map(
+        data_frame=stadium_loc_df, 
+        lat='latitude', lon='longitude', 
+        color='Team', color_discrete_map=team_colours, 
+        hover_name='Stadium', hover_data={'latitude': False, 'longitude': False}, 
+        size='Number of Matches', zoom=4.5, 
+        title='Stadium Map', subtitle='Map of the stadiums located in England sized by the number of total matches hosted in the stadium'
+    )
     _fig.update_layout(autosize=False, width=800, height=800)
     return
 
@@ -312,8 +317,18 @@ def _(df, pl, px):
 def _(df, pl, px):
     # Bar chart showing which stadium had the most goals scored
     stadium_goals = df.clone().group_by(['Stadium', 'Region']).agg(pl.col('Goals Scored').sum()).sort(by='Goals Scored', descending=True)
-    _fig = px.bar(data_frame=stadium_goals, y='Stadium', x='Goals Scored', color='Region', title='Total Goals Scored by Stadium and Region', color_discrete_sequence=px.colors.qualitative.Dark24)
-    _fig.update_layout(autosize=False, width=1200, height=700, yaxis={'categoryorder': 'total ascending'})  # Orders the bars in ascending order (bottom up)
+
+    _fig = px.bar(
+        data_frame=stadium_goals, 
+        y='Stadium', x='Goals Scored', 
+        color='Region', color_discrete_sequence=px.colors.qualitative.Dark24,
+        title='Total Goals Scored by Stadium and Region'
+    )
+
+    _fig.update_layout(
+        autosize=False, width=1200, height=700, 
+        yaxis={'categoryorder': 'total ascending'}  # Orders the bars in ascending order (bottom up)
+    )  
     return
 
 
@@ -338,6 +353,7 @@ def _(df, pl, px):
 def _(df, pl, px):
     # Number of games per kickoff
     kickoff_games = df.clone().select(pl.col('Kickoff').value_counts()).unnest('Kickoff').sort(by='Kickoff')
+
     _fig = px.bar(data_frame=kickoff_games, x='Kickoff', y='count', title='Total Games by Kickoff')
     _fig.update_layout(autosize=False, width=600, height=600)
     return
@@ -353,7 +369,13 @@ def _(mo):
 
 @app.cell
 def _(cs, data_new_1, pl, px):
-    home_away_goals = data_new_1.clone().select(['Home Goals', 'Away Goals']).select(pl.sum('Home Goals', 'Away Goals')).unpivot(on=cs.numeric(), variable_name='Home/Away', value_name='Goals Scored')
+    home_away_goals = (
+        data_new_1
+        .clone()
+        .select(pl.sum('Home Goals', 'Away Goals'))
+        .unpivot(on=cs.numeric(), variable_name='Home/Away', value_name='Goals Scored')
+    )
+
     _fig = px.bar(data_frame=home_away_goals, x='Home/Away', y='Goals Scored', title='Total Goals Scored Home and Away')
     _fig.update_layout(autosize=False, width=600, height=600)
     return
@@ -362,10 +384,41 @@ def _(cs, data_new_1, pl, px):
 @app.cell
 def _(cs, df, pl, px):
     # Stacked bar chart of which team scored the most goals separated by home and away goals
-    home_goals = df.clone().group_by('Home Team').agg(pl.col('Home Goals').sum()).sort(by='Home Team').rename({'Home Team': 'Team', 'Home Goals': 'Home'})
-    away_goals = df.clone().group_by('Away Team').agg(pl.col('Away Goals').sum()).sort(by='Away Team').rename({'Away Team': 'Team', 'Away Goals': 'Away'})
-    home_away_team_goals = home_goals.join(away_goals, on=['Team'], how='inner').unpivot(on=cs.numeric(), index='Team', variable_name='Home/Away', value_name='Goals Scored')
-    _fig = px.bar(data_frame=home_away_team_goals, x='Team', y='Goals Scored', color='Home/Away', title='Total Goals Scored Home and Away by Team', color_discrete_sequence=px.colors.qualitative.Bold)
+    home_goals = (
+        df.clone()
+        .group_by('Home Team')
+        .agg(pl.col('Home Goals').sum().alias('Home'))
+        .sort(by='Home Team')
+        .rename({'Home Team': 'Team'})
+    )
+
+    away_goals = (
+        df.clone()
+        .group_by('Away Team')
+        .agg(pl.col('Away Goals').sum().alias('Away'))
+        .sort(by='Away Team')
+        .rename({'Away Team': 'Team'})
+    )
+
+    home_away_team_goals = (
+        home_goals
+        .join(away_goals, on=['Team'], how='inner')
+
+        # Pivot long
+        .unpivot(
+            index='Team', 
+            on=cs.numeric(), 
+            variable_name='Home/Away', 
+            value_name='Goals Scored'
+        )
+    )
+
+    _fig = px.bar(
+        data_frame=home_away_team_goals, 
+        x='Team', y='Goals Scored', 
+        color='Home/Away', color_discrete_sequence=px.colors.qualitative.Bold,
+        title='Total Goals Scored Home and Away by Team', 
+    )
     _fig.update_layout(autosize=False, width=1000, height=600)
     return
 
@@ -380,23 +433,77 @@ def _(mo):
 
 @app.cell
 def _(df, pl):
-    total_home_away_goals = df.clone().group_by("Home Team").agg(pl.col("Home Goals", "Away Goals").sum()).with_columns((pl.col("Home Goals") + pl.col("Away Goals")).alias("Total Goals"), pl.lit("Total").alias("Season")).rename({"Home Team": "Team"}).select('Season', 'Team', 'Home Goals', 'Away Goals', 'Total Goals')
+    total_home_away_goals = (
+        df.clone()
+        .group_by("Home Team")
+        .agg(pl.col("Home Goals", "Away Goals").sum())
+        .with_columns(
+            (pl.col("Home Goals") + pl.col("Away Goals")).alias("Total Goals"), 
+            pl.lit("Total").alias("Season")
+        )
+        .rename({"Home Team": "Team"})
+        .select('Season', 'Team', 'Home Goals', 'Away Goals', 'Total Goals')
+    )
 
-    season_goals = df.clone().group_by("Season", "Home Team").agg(pl.col("Home Goals", "Away Goals").sum()).with_columns((pl.col("Home Goals") + pl.col("Away Goals")).alias("Total Goals")).sort(by="Season").rename({"Home Team": "Team"})
+    season_goals = (
+        df.clone()
+        .group_by("Season", "Home Team")
+        .agg(pl.col("Home Goals", "Away Goals").sum())
+        .with_columns(
+            (pl.col("Home Goals") + pl.col("Away Goals")).alias("Total Goals")
+        )
+        .sort(by="Season")
+        .rename({"Home Team": "Team"})
+    )
 
     season_total_goals = pl.concat([season_goals, total_home_away_goals])
     return (season_total_goals,)
 
 
 @app.cell
-def _(pl, px, season_total_goals):
+def _(df, display, mo):
+    season_dropdown = mo.ui.dropdown(
+        options=df['Season'].unique().sort(descending=True).to_list(),
+        label="Choose a season",
+        value=df['Season'].unique().sort(descending=True).to_list()[0],
+        searchable=False,
+    )
+
+    home_away_dropdown = mo.ui.dropdown(
+        options=['Home Goals', 'Away Goals', 'Total Goals'],
+        label="Choose goals scored",
+        value='Home Goals',
+        searchable=False,
+    )
+
+    display(
+        season_dropdown,
+        home_away_dropdown
+    )
+    return home_away_dropdown, season_dropdown
+
+
+@app.cell
+def _(
+    display,
+    home_away_dropdown,
+    pl,
+    px,
+    season_dropdown,
+    season_total_goals,
+):
     # Pie chart of goals scored segmented by teams and the season
     def team_goals_by_season(season: str='23/24', home_away: str='Total Goals'):
         df1 = season_total_goals.filter(pl.col('Season').eq(f'{season}'))
         _fig = px.pie(df1, names='Team', values=f'{home_away}', title=f'Proportion of {home_away} Scored by Teams ({season})')
         _fig.update_layout(autosize=False, width=750, height=500)
         return _fig
-    team_goals_by_season(season='23/24', home_away='Away Goals')
+
+    try:
+        display(team_goals_by_season(season=season_dropdown.value, home_away=home_away_dropdown.value))
+    except ValueError:
+        print('Please select season and the type of goals using the dropdowns above')
+
     return
 
 
@@ -412,46 +519,142 @@ def _(mo):
 def _(df, pl, px):
     # Time series of goals scored compared between each season and the over all seasons
     df_season_goals = df.clone().group_by('Season', 'Round Number').agg(pl.col('Goals Scored').sum()).sort(by='Round Number')
-    df_total_goals = df.clone().group_by('Round Number').agg(pl.col('Goals Scored').sum()).sort(by='Round Number').with_columns(pl.lit('Total').alias('Season')).select('Season', 'Round Number', 'Goals Scored')
+
+    df_total_goals = (
+        df.clone()
+        .group_by('Round Number').agg(pl.col('Goals Scored').sum())
+        .sort(by='Round Number')
+        .with_columns(
+            pl.lit('Total').alias('Season')
+        )
+        .select('Season', 'Round Number', 'Goals Scored')
+    )
+
     df_goals = pl.concat([df_season_goals, df_total_goals])
+
     _fig = px.line(df_goals, x='Round Number', y='Goals Scored', color='Season', color_discrete_sequence=px.colors.qualitative.G10)
     _fig.update_layout(autosize=False, width=1300, height=600, title='Time-series of Goals Score by Round Number', xaxis=dict(tickmode='linear', tick0=1, dtick=1))
     return
 
 
 @app.cell
-def _(df, pl, px):
+def _(df, mo):
+    team_dropdown = mo.ui.dropdown(
+        options=df['Home Team'].unique().sort().to_list(),
+        label='Select a team',
+        # value='Arsenal',
+        searchable=True
+    )
+
+    team_dropdown
+    return (team_dropdown,)
+
+
+@app.cell
+def _(df, pl, px, team_dropdown):
     # Time series of the number of goals each team has scored over the season
     def track_team_goals(team: str='Arsenal'):
-        team_season_goals = df.clone().filter((pl.col('Home Team') == f'{team}') | (pl.col('Away Team') == f'{team}')).with_columns(pl.when(pl.col('Home Team') == f'{team}').then(pl.col('Home Goals')).when(pl.col('Away Team') == f'{team}').then(pl.col('Away Goals')).alias('Goal Tracking')).select('Season', 'Round Number', 'Goal Tracking')
-        total_team_season_goals = team_season_goals.clone().group_by('Round Number').agg(pl.col('Goal Tracking').sum()).sort(by='Round Number').with_columns(pl.lit('Total').alias('Season')).select('Season', 'Round Number', 'Goal Tracking').cast({'Goal Tracking': pl.UInt8})
+        team_season_goals = (
+            df.clone()
+            .filter((pl.col('Home Team') == f'{team}') | (pl.col('Away Team') == f'{team}'))
+            .with_columns(
+                pl.when(pl.col('Home Team') == f'{team}')
+                .then(pl.col('Home Goals'))
+                .when(pl.col('Away Team') == f'{team}')
+                .then(pl.col('Away Goals')).alias('Goal Tracking')
+            )
+            .select('Season', 'Round Number', 'Goal Tracking')
+        )
+
+        total_team_season_goals = (
+            team_season_goals.clone()
+            .group_by('Round Number')
+            .agg(pl.col('Goal Tracking').sum())
+            .sort(by='Round Number')
+            .with_columns(
+                pl.lit('Total').alias('Season')
+            )
+            .select('Season', 'Round Number', 'Goal Tracking')
+            .cast({'Goal Tracking': pl.UInt8})
+        )
+
         team_season_goals_df = pl.concat([team_season_goals, total_team_season_goals])
+
         _fig = px.line(team_season_goals_df, x='Round Number', y='Goal Tracking', color='Season', title=f'Goals Scored by {team} per Round')
         _fig.update_layout(autosize=False, width=1300, height=600, xaxis=dict(tick0=1, dtick=1))
+
         return _fig
-    track_team_goals()
+
+    track_team_goals(team = team_dropdown.value)
     return
 
 
 @app.cell
-def _(df, go, pl):
+def _(df, display, mo):
+    season_dropdown2 = mo.ui.dropdown(
+            options=df['Season'].unique().to_list(),
+            label="Choose a season",
+            # value=df['Season'].unique().sort(descending=True).to_list()[0],
+            searchable=False,
+        )
+
+    display(
+        season_dropdown2,
+    )
+    return (season_dropdown2,)
+
+
+@app.cell
+def _(df, go, pl, season_dropdown2):
     # Bar chart showing most goals scored by a single team at each round for each season
-    def _most_goals_per_round_season(season: str='23/24'):
-        df1 = df.group_by('Season', 'Round Number').agg(pl.all().sort_by('Goals Scored').last()).sort(by='Round Number').select('Season', 'Round Number', 'Winning Team', 'Goals Scored').filter(pl.col('Season').eq(season))
+    def team_most_goals_per_round_season(season: str='23/24'):
+        df1 = (
+            df.clone()
+            .group_by('Season', 'Round Number')
+            .agg(pl.all().sort_by('Goals Scored').last())
+            .sort(by='Round Number')
+            .select('Season', 'Round Number', 'Winning Team', 'Goals Scored')
+            .filter(pl.col('Season').eq(season))
+        )
+
         _fig = go.Figure()
-        _fig.add_bar(x=df1['Round Number'].to_list(), y=df1['Goals Scored'].to_list(), text=df1['Winning Team'].to_list(), textposition='inside', textangle=-90, insidetextanchor='middle', textfont_size=12)
+        _fig.add_bar(
+            x=df1['Round Number'].to_list(), y=df1['Goals Scored'].to_list(), 
+            text=df1['Winning Team'].to_list(), textposition='inside', textangle=-90, insidetextanchor='middle', textfont_size=12
+        )
+
         _fig.update_layout(title=f'Most Goals Scored in Each Round for the {season} Season', xaxis=dict(tickmode='linear', tick0=1, dtick=1))
+
         return _fig
-    _most_goals_per_round_season(season='24/25')
+
+    team_most_goals_per_round_season(season=season_dropdown2.value)
     return
 
 
 @app.cell
 def _(df, pl, px):
     # Source - https://stackoverflow.com/a/72019719
-    _most_goals_per_round_season = df.group_by('Season', 'Round Number').agg(pl.all().sort_by('Goals Scored').last()).sort(by='Round Number').select('Season', 'Round Number', 'Goals Scored')
-    most_goals_per_round_total = _most_goals_per_round_season.clone().group_by('Round Number').agg(pl.col('Goals Scored').sum()).with_columns(pl.lit('Total').alias('Season')).select('Season', 'Round Number', 'Goals Scored').cast({'Goals Scored': pl.UInt8})
-    most_goals_per_round = pl.concat([_most_goals_per_round_season, most_goals_per_round_total]).sort(by='Round Number')
+    most_goals_per_round_season = (
+        df.clone().
+        group_by('Season', 'Round Number')
+        .agg(pl.all().sort_by('Goals Scored').last())
+        .sort(by='Round Number')
+        .select('Season', 'Round Number', 'Goals Scored')
+    )
+
+    most_goals_per_round_total = (
+        most_goals_per_round_season.clone()
+        .group_by('Round Number')
+        .agg(pl.col('Goals Scored').sum())
+        .with_columns(
+            pl.lit('Total').alias('Season')
+        )
+        .select('Season', 'Round Number', 'Goals Scored')
+        .cast({'Goals Scored': pl.UInt8})
+    )
+
+    most_goals_per_round = pl.concat([most_goals_per_round_season, most_goals_per_round_total]).sort(by='Round Number')
+
     _fig = px.line(data_frame=most_goals_per_round, x='Round Number', y='Goals Scored', color='Season', title='Most Goals Scored per Round')
     _fig.update_layout(xaxis=dict(tickmode='linear', tick0=1, dtick=1))
     return
