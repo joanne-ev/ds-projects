@@ -22,7 +22,7 @@ The Women's Super League (WSL) is the top division league for professional women
 1. Who are the *Big Six* of the WSL?
 2. Does kickoff time mean fewer goals scored?
 
-### Who are the *Big Six* of the WSL?
+### Who are the *Big Four* of the WSL?
 
 **Background:** The *Big Six* is a term used to describe the six wealthiest clubs in the Premier League (i.e., top division league for professional men's football in England) that historically dominate the league standings and possess the largest global fanbases. The Big Six include: Arsenal, Chelsea, Liverpool, Manchester City, Manchester United and Tottenham Hotspur.
 
@@ -30,7 +30,8 @@ The Women's Super League (WSL) is the top division league for professional women
 
 **Purpose:** This research looks to determine the current *Big Four* of the WSL based on data from previous seasons.
 
-**Analysis:** The WSL's Big Four will be determined by 
+**Analysis:** The WSL's Big Four will be determined by
+
 1. Ratio of games won to games lost
-1. Ratio of goals scored to goals conceeded
-1. Consistency throughout seasons
+2. Ratio of goals scored to goals conceeded -> Goal Difference
+3. Consistency throughout seasons
