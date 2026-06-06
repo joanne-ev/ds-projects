@@ -68,24 +68,26 @@ def _(data):
 @app.cell
 def _(data):
     # Manually categorise each stadium by exporting the unique stadiums within the column
-    home_stadium = data.select(['Home Team', "Location"]).unique().sort(by="Home Team").rename({"Home Team": "Team", "Location": "Stadium"})
-    # home_stadium.write_csv("team_stadiums.csv")
+    home_stadium = data.select(['Home Team', "Location"]).unique().sort(by=["Home Team", "Location"]).rename({"Home Team": "Team", "Location": "Stadium"})
+    home_stadium.write_csv("team_stadiums.csv")
     return
 
 
 @app.cell
 def _(csv):
-    stadium = False
-    if stadium:
-        import requests
-        import time
+    import requests
+    import time
+
+    stadium = True
+    if stadium:    
         with open('team_stadiums.csv') as f:
             rows = list(csv.DictReader(f))
         for _row in rows:
             query = f"{_row['Stadium']}"
-            resp = requests.get('https://nominatim.openstreetmap.org/search', params={'q': query, 'format': 'json', 'limit': 1}, headers={'User-Agent': 'StadiumGeocoder/1.0'}).json()
-            _row['latitude'] = resp[0]['lat'] if resp else ''
-            _row['longitude'] = resp[0]['lon'] if resp else ''
+            resp = requests.get('https://nominatim.openstreetmap.org/search', params={'q': query, 'format': 'json', 'limit': 1}, headers={'User-Agent': 'StadiumGeocoder/1.0'}).json()[0]
+            _row['latitude'] = resp['lat'] if resp else ''
+            _row['longitude'] = resp['lon'] if resp else ''
+            _row['region'] = resp['address'].get('state_district') or resp['address'].get("city_district") if resp else ''
             time.sleep(1)
         with open('team_stadium_locations.csv', 'w', newline='') as f:
             print('Creating CSV')
@@ -105,7 +107,8 @@ def _(csv, data):
         stadium_latitude = {}
         for _row in reader:
             stadium_longitude[_row['Stadium']] = _row['longitude']
-            stadium_latitude[_row['Stadium']] = _row['latitude']  # stadium_region[row["Stadium"]] = row["Region"]
+            stadium_latitude[_row['Stadium']] = _row['latitude']  
+            # stadium_region[row["Stadium"]] = row["Region"]
         if len(stadium_region) != len(stadium_longitude) != len(stadium_latitude):
             print('Incorrect', len(stadium_longitude), len(stadium_latitude), data['Location'].unique().shape[0], sep='\n')  # len(stadium_region),
     return stadium_latitude, stadium_longitude, stadium_region
@@ -314,21 +317,27 @@ def _(df, pl, px):
 
 
 @app.cell
-def _(df, pl, px):
+def _(df):
+    df
+    return
+
+
+@app.cell
+def _(df, pl):
     # Bar chart showing which stadium had the most goals scored
     stadium_goals = df.clone().group_by(['Stadium', 'Region']).agg(pl.col('Goals Scored').sum()).sort(by='Goals Scored', descending=True)
+    stadium_goals
+    # _fig = px.bar(
+    #     data_frame=stadium_goals, 
+    #     y='Stadium', x='Goals Scored', 
+    #     color='Region', color_discrete_sequence=px.colors.qualitative.Dark24,
+    #     title='Total Goals Scored by Stadium and Region'
+    # )
 
-    _fig = px.bar(
-        data_frame=stadium_goals, 
-        y='Stadium', x='Goals Scored', 
-        color='Region', color_discrete_sequence=px.colors.qualitative.Dark24,
-        title='Total Goals Scored by Stadium and Region'
-    )
-
-    _fig.update_layout(
-        autosize=False, width=1200, height=700, 
-        yaxis={'categoryorder': 'total ascending'}  # Orders the bars in ascending order (bottom up)
-    )  
+    # _fig.update_layout(
+    #     autosize=False, width=1200, height=700, 
+    #     yaxis={'categoryorder': 'total ascending'}  # Orders the bars in ascending order (bottom up)
+    # )  
     return
 
 
@@ -503,7 +512,6 @@ def _(
         display(team_goals_by_season(season=season_dropdown.value, home_away=home_away_dropdown.value))
     except ValueError:
         print('Please select season and the type of goals using the dropdowns above')
-
     return
 
 
