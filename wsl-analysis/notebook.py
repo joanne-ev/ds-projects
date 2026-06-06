@@ -506,6 +506,29 @@ def _(df, pl):
 
 
 @app.cell
+def _(
+    display,
+    home_away_dropdown,
+    pl,
+    px,
+    season_dropdown,
+    season_total_goals,
+):
+    # Pie chart of goals scored segmented by teams and the season
+    def team_goals_by_season(season: str='23/24', home_away: str='Total Goals'):
+        df1 = season_total_goals.filter(pl.col('Season').eq(f'{season}'))
+        _fig = px.pie(df1, names='Team', values=f'{home_away}', title=f'Proportion of {home_away} Scored by Teams ({season})')
+        _fig.update_layout(autosize=False, width=750, height=500)
+        return _fig
+
+    try:
+        display(team_goals_by_season(season=season_dropdown.value, home_away=home_away_dropdown.value))
+    except ValueError:
+        print('Please select season and the type of goals using the dropdowns below')
+    return
+
+
+@app.cell
 def _(df, display, mo):
     season_dropdown = mo.ui.dropdown(
         options=df['Season'].unique().sort(descending=True).to_list(),
@@ -526,29 +549,6 @@ def _(df, display, mo):
         home_away_dropdown
     )
     return home_away_dropdown, season_dropdown
-
-
-@app.cell
-def _(
-    display,
-    home_away_dropdown,
-    pl,
-    px,
-    season_dropdown,
-    season_total_goals,
-):
-    # Pie chart of goals scored segmented by teams and the season
-    def team_goals_by_season(season: str='23/24', home_away: str='Total Goals'):
-        df1 = season_total_goals.filter(pl.col('Season').eq(f'{season}'))
-        _fig = px.pie(df1, names='Team', values=f'{home_away}', title=f'Proportion of {home_away} Scored by Teams ({season})')
-        _fig.update_layout(autosize=False, width=750, height=500)
-        return _fig
-
-    try:
-        display(team_goals_by_season(season=season_dropdown.value, home_away=home_away_dropdown.value))
-    except ValueError:
-        print('Please select season and the type of goals using the dropdowns above')
-    return
 
 
 @app.cell(hide_code=True)
@@ -582,19 +582,6 @@ def _(df, pl, px):
 
 
 @app.cell
-def _(df, mo):
-    team_dropdown = mo.ui.dropdown(
-        options=df['Home Team'].unique().sort().to_list(),
-        label='Select a team',
-        # value='Arsenal',
-        searchable=True
-    )
-
-    team_dropdown
-    return (team_dropdown,)
-
-
-@app.cell
 def _(df, pl, px, team_dropdown):
     # Time series of the number of goals each team has scored over the season
     def track_team_goals(team: str='Arsenal'):
@@ -625,32 +612,35 @@ def _(df, pl, px, team_dropdown):
         team_season_goals_df = pl.concat([team_season_goals, total_team_season_goals])
 
         _fig = px.line(team_season_goals_df, x='Round Number', y='Goal Tracking', color='Season', title=f'Goals Scored by {team} per Round')
-        _fig.update_layout(autosize=False, width=1300, height=600, xaxis=dict(tick0=1, dtick=1))
 
-        return _fig
+        if team is None:
+            return 'Please select a Team using the dropdown below'
+        else:
+            return _fig.update_layout(autosize=False, width=1300, height=600, xaxis=dict(tick0=1, dtick=1))
 
     track_team_goals(team = team_dropdown.value)
     return
 
 
 @app.cell
-def _(df, display, mo):
-    season_dropdown2 = mo.ui.dropdown(
-            options=df['Season'].unique().to_list(),
-            label="Choose a season",
-            # value=df['Season'].unique().sort(descending=True).to_list()[0],
-            searchable=False,
-        )
-
-    display(
-        season_dropdown2,
+def _(df, mo):
+    team_dropdown = mo.ui.dropdown(
+        options=df['Home Team'].unique().sort().to_list(),
+        label='Select a team',
+        # value='Arsenal',
+        searchable=True
     )
-    return (season_dropdown2,)
+
+    team_dropdown
+    return (team_dropdown,)
 
 
 @app.cell
 def _(df, go, pl, season_dropdown2):
     # Bar chart showing most goals scored by a single team at each round for each season
+    import warnings
+    warnings.filterwarnings('ignore', message='Comparisons with None always result in null')
+
     def team_most_goals_per_round_season(season: str='23/24'):
         df1 = (
             df.clone()
@@ -667,12 +657,28 @@ def _(df, go, pl, season_dropdown2):
             text=df1['Winning Team'].to_list(), textposition='inside', textangle=-90, insidetextanchor='middle', textfont_size=12
         )
 
-        _fig.update_layout(title=f'Most Goals Scored in Each Round for the {season} Season', xaxis=dict(tickmode='linear', tick0=1, dtick=1))
-
-        return _fig
+        if season is None:
+            return 'Please select a season using the dropdown below'
+        else:
+            return _fig.update_layout(title=f'Most Goals Scored in Each Round for the {season} Season', xaxis=dict(tickmode='linear', tick0=1, dtick=1))
 
     team_most_goals_per_round_season(season=season_dropdown2.value)
     return
+
+
+@app.cell
+def _(df, display, mo):
+    season_dropdown2 = mo.ui.dropdown(
+            options=df['Season'].unique().to_list(),
+            label="Choose a season",
+            # value=df['Season'].unique().sort(descending=True).to_list()[0],
+            searchable=False,
+        )
+
+    display(
+        season_dropdown2,
+    )
+    return (season_dropdown2,)
 
 
 @app.cell
