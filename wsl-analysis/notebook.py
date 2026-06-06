@@ -54,15 +54,11 @@ def _(data_23, data_24, pl):
     data_23_1 = data_23.clone().with_columns(pl.lit('23/24').alias('Season'))
     data_24_1 = data_24.clone().with_columns(pl.lit('24/25').alias('Season'))
     data = pl.concat([data_23_1, data_24_1])
+
     # Join the two dataframes on top of each other
     print(data.shape)
-    return (data,)
-
-
-@app.cell
-def _(data):
     data.head()
-    return
+    return (data,)
 
 
 @app.cell
@@ -84,9 +80,9 @@ def _(csv, data):
     stadium = False
 
     if stadium:    
-        home_stadium.write_csv("team_stadiums.csv")
+        home_stadium.write_csv("data/team_stadiums.csv")
 
-        with open('team_stadiums.csv') as f:
+        with open('data/team_stadiums.csv') as f:
             rows = list(csv.DictReader(f))
         for _row in rows:
             query = f"{_row['Stadium']}"
@@ -105,7 +101,7 @@ def _(csv, data):
             time.sleep(1.5)
 
         print('Creating CSV...')
-        with open('team_stadium_locations.csv', 'w', newline='') as f:
+        with open('data/team_stadium_locations.csv', 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
@@ -115,17 +111,17 @@ def _(csv, data):
 @app.cell
 def _(pl):
     # Check if there are null values
+    tsl = pl.read_csv("data/team_stadium_locations.csv")
 
     # Count the number of null values
-    tsl_null_check = pl.read_csv("team_stadium_locations.csv").null_count().transpose().to_series().sum() > 0
+    tsl_null_check = tsl.null_count().transpose().to_series().sum() > 0
 
     if tsl_null_check:
-        tsl = pl.read_csv("team_stadium_locations.csv").filter(pl.any_horizontal(pl.all().is_null()))
-        print(tsl)
+        print(tsl.filter(pl.any_horizontal(pl.all().is_null())))
         raise ValueError("null present")
     else:
         (
-            pl.read_csv("team_stadium_locations.csv")
+            pl.read_csv("data/team_stadium_locations.csv")
             .with_columns(
                 pl.when(pl.col('region').str.contains('London'))
                 .then(pl.lit('Greater London'))
@@ -134,7 +130,7 @@ def _(pl):
                 .otherwise(pl.col('region'))
                 .alias('region')
             )
-            .write_csv("team_stadium_locations.csv")
+            .write_csv("data/team_stadium_locations.csv")
         )
     return
 
@@ -142,7 +138,7 @@ def _(pl):
 @app.cell
 def _(csv, data):
     # Convert the csv of the stadiums and their geographical location into a dictionary where the stadium is the key and the location is the value
-    with open('team_stadium_locations.csv', 'r') as file:
+    with open('data/team_stadium_locations.csv', 'r') as file:
         reader = csv.DictReader(file)
         stadium_region = {}
         stadium_longitude = {}
@@ -260,14 +256,22 @@ def _(mo):
 @app.cell
 def _(data_new_1):
     # Reorder columns
-    df = data_new_1.clone().select(['Season', 'Round Number', 'Hour', 'Day', 'Month', 'Year', 'Kickoff', 'Stadium', 'Region', 'Longitude', 'Latitude', 'Home Team', 'Away Team', 'Home Goals', 'Away Goals', 'Winner', 'Winning Team', 'Losing Team', 'Goal Difference', 'Goals Scored'])
-    return (df,)
+    df = (
+        data_new_1
+        .clone()
+        .select(
+            ['Season', 'Round Number', 
+            'Hour', 'Day', 'Month', 'Year', 'Kickoff', 
+            'Stadium', 'Region', 'Longitude', 'Latitude', 
+            'Home Team', 'Away Team', 
+            'Home Goals', 'Away Goals', 
+            'Winner', 'Winning Team', 'Losing Team', 
+            'Goal Difference', 'Goals Scored']
+        )
+    )
 
-
-@app.cell
-def _(df):
     df.head()
-    return
+    return (df,)
 
 
 @app.cell(column=1, hide_code=True)
