@@ -66,34 +66,76 @@ def _(data):
 
 
 @app.cell
-def _(data):
+def _(csv, data):
+    # Team and their respective stadium
+    home_stadium = (
+        data
+        .select(['Home Team', "Location"])
+        .unique()
+        .sort(by=["Home Team", "Location"]).
+        rename({"Home Team": "Team", "Location": "Stadium"})
+    )
+
     # Manually categorise each stadium by exporting the unique stadiums within the column
-    home_stadium = data.select(['Home Team', "Location"]).unique().sort(by=["Home Team", "Location"]).rename({"Home Team": "Team", "Location": "Stadium"})
-    home_stadium.write_csv("team_stadiums.csv")
-    return
 
-
-@app.cell
-def _(csv):
     import requests
     import time
 
-    stadium = True
+    stadium = False
+
     if stadium:    
+        home_stadium.write_csv("team_stadiums.csv")
+
         with open('team_stadiums.csv') as f:
             rows = list(csv.DictReader(f))
         for _row in rows:
             query = f"{_row['Stadium']}"
-            resp = requests.get('https://nominatim.openstreetmap.org/search', params={'q': query, 'format': 'json', 'limit': 1}, headers={'User-Agent': 'StadiumGeocoder/1.0'}).json()[0]
-            _row['latitude'] = resp['lat'] if resp else ''
-            _row['longitude'] = resp['lon'] if resp else ''
-            _row['region'] = resp['address'].get('state_district') or resp['address'].get("city_district") if resp else ''
-            time.sleep(1)
+            resp = (
+                requests
+                .get(
+                    'https://nominatim.openstreetmap.org/search', 
+                    params={'q': query, 'format': 'json', 'limit': 1, 'addressdetails':1}, 
+                    headers={'User-Agent': 'StadiumGeocoder/1.0'},
+                )
+                .json()
+            )
+            _row['latitude'] = resp[0]['lat'] if resp else ''
+            _row['longitude'] = resp[0]['lon'] if resp else ''
+            _row['region'] = resp[0]['address'].get('state_district') or resp[0]['address'].get("city_district") if resp else ''
+            time.sleep(1.5)
+
+        print('Creating CSV...')
         with open('team_stadium_locations.csv', 'w', newline='') as f:
-            print('Creating CSV')
             writer = csv.DictWriter(f, fieldnames=rows[0].keys())
             writer.writeheader()
             writer.writerows(rows)
+    return
+
+
+@app.cell
+def _(pl):
+    # Check if there are null values
+
+    # Count the number of null values
+    tsl_null_check = pl.read_csv("team_stadium_locations.csv").null_count().transpose().to_series().sum() > 0
+
+    if tsl_null_check:
+        tsl = pl.read_csv("team_stadium_locations.csv").filter(pl.any_horizontal(pl.all().is_null()))
+        print(tsl)
+        raise ValueError("null present")
+    else:
+        (
+            pl.read_csv("team_stadium_locations.csv")
+            .with_columns(
+                pl.when(pl.col('region').str.contains('London'))
+                .then(pl.lit('Greater London'))
+                .when(pl.col('region').str.contains('Liverpool|Manchester'))
+                .then(pl.lit('North West'))
+                .otherwise(pl.col('region'))
+                .alias('region')
+            )
+            .write_csv("team_stadium_locations.csv")
+        )
     return
 
 
@@ -108,9 +150,9 @@ def _(csv, data):
         for _row in reader:
             stadium_longitude[_row['Stadium']] = _row['longitude']
             stadium_latitude[_row['Stadium']] = _row['latitude']  
-            # stadium_region[row["Stadium"]] = row["Region"]
+            stadium_region[_row["Stadium"]] = _row["region"]
         if len(stadium_region) != len(stadium_longitude) != len(stadium_latitude):
-            print('Incorrect', len(stadium_longitude), len(stadium_latitude), data['Location'].unique().shape[0], sep='\n')  # len(stadium_region),
+            print('Incorrect', len(stadium_longitude), len(stadium_latitude), len(stadium_region), data['Location'].unique().shape[0], sep='\n')
     return stadium_latitude, stadium_longitude, stadium_region
 
 
@@ -317,27 +359,21 @@ def _(df, pl, px):
 
 
 @app.cell
-def _(df):
-    df
-    return
-
-
-@app.cell
-def _(df, pl):
+def _(df, pl, px):
     # Bar chart showing which stadium had the most goals scored
     stadium_goals = df.clone().group_by(['Stadium', 'Region']).agg(pl.col('Goals Scored').sum()).sort(by='Goals Scored', descending=True)
     stadium_goals
-    # _fig = px.bar(
-    #     data_frame=stadium_goals, 
-    #     y='Stadium', x='Goals Scored', 
-    #     color='Region', color_discrete_sequence=px.colors.qualitative.Dark24,
-    #     title='Total Goals Scored by Stadium and Region'
-    # )
+    _fig = px.bar(
+        data_frame=stadium_goals, 
+        y='Stadium', x='Goals Scored', 
+        color='Region', color_discrete_sequence=px.colors.qualitative.Dark24,
+        title='Total Goals Scored by Stadium and Region'
+    )
 
-    # _fig.update_layout(
-    #     autosize=False, width=1200, height=700, 
-    #     yaxis={'categoryorder': 'total ascending'}  # Orders the bars in ascending order (bottom up)
-    # )  
+    _fig.update_layout(
+        autosize=False, width=1200, height=700, 
+        yaxis={'categoryorder': 'total ascending'}  # Orders the bars in ascending order (bottom up)
+    )  
     return
 
 
