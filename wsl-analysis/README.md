@@ -12,19 +12,3 @@
 4. In your molab session upload the `data` folder
 5. Run the notebook!
 6. Toggle app model on the bottom right to see the notebook as the outputs without the code cells
-
-## Background
-
-The Women's Super League (WSL) is the highest level of women's football in England and one of the most popular leagues in women's football.
-
-## Plan
-
-An analysis plan was created on the whiteboard application Apple Freeform and can be viewed in the analysis-plan.pdf.
-
-## Model Build
-
-## Learnings
-
-### Data Types
-
-> [!NOTE] Source: https://pola.rs/posts/understanding-polars-data-types/
