@@ -18,8 +18,8 @@ def _(mo):
     **Analysis:** The WSL's Big Four will be determined by
 
     1. Ratio of games won to games lost
-    2. Ratio of goals scored to goals conceeded -> Goal Difference
-    3. Consistency throughout seasons
+    2. Relationship between goals scored to goals conceeded using goal difference
+    3. Consistency throughout seasons determined by number of years within the top half (6) of the table.
     """)
     return
 
@@ -103,6 +103,72 @@ def _(data, plt, sns, win_loss_gd):
     plt.title(f'Goal Difference for WSL teams from {data['Season'].unique().min()} to {data['Season'].unique().max()}')
     plt.xticks(rotation=45, ha='right')
     plt.gca()  # return the current axes as the final display value
+    return
+
+
+@app.cell
+def _(data):
+    data
+    return
+
+
+@app.cell
+def _(data):
+    # When a team wins, they get +3 points
+    # When a team draws they get +1 point
+    # When a team loses they get 0 points
+
+    long_data = (
+        data
+        .clone()
+        .select(['Season', 'Winning Team', 'Losing Team', 'Draw (1)', 'Draw (2)'])
+        .unpivot(['Winning Team', 'Losing Team', 'Draw (1)', 'Draw (2)'], index="Season", variable_name='Win/Lose', value_name='Team')
+        # .drop_nulls(subset=['Team'])
+    )
+
+    long_data
+    return (long_data,)
+
+
+@app.cell
+def _(long_data, pl):
+    # Calculate points
+    points = (
+
+        long_data
+        .with_columns(
+            pl.lit(0).alias("Points"),
+        )
+        .with_columns(
+            pl.when(pl.col('Win/Lose').str.contains('Win'))
+            .then(pl.col('Points').add(3))
+            .when(pl.col('Win/Lose').str.contains('Lose'))
+            .then(pl.col('Points').add(0))
+            .when(pl.col('Win/Lose').str.contains('Draw'))
+            .then(pl.col('Points').add(1))
+        )
+
+        # Total points
+        .group_by(["Season", "Team"])
+        .agg(
+            pl.sum("Points").alias("Total Points"),
+        )
+    )
+
+    ranked = (
+        points
+        # Identify and rank the top six teams for each season
+        .sort("Season", "Total Points", descending=[False, True])
+        .with_columns(
+            pl.col("Total Points")
+            .rank(method="dense", descending=True)
+            .over("Season")
+            .alias("Rank")
+        )
+        .filter(pl.col("Rank") <= 6)
+    )
+
+    long_data
     return
 
 
