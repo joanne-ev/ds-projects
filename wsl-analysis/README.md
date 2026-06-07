@@ -1,8 +1,10 @@
 # ⚽ Predicting Game Results in the Women's Super League (WSL)
 
+[![](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/joanne-ev/ds-projects/blob/main/wsl-analysis/notebook.py)
+
 ## How to use this repository
 
-[Marimo notebooks](https://marimo.io/) were used in favour of Jupyter Notebooks. Marimo notebooks are Git-friendly reproducible Python scripts (`.py`) that can be edited as a notebook as shared as an app. A core feature of Marimo is its reactivity - *"run one cell and marimo reacts by running affected cells"*. Marimo also provides built-in [interactive elements](https://docs.marimo.io/guides/interactivity/) like dropdowns allowing for more user-engaged reading.
+[Marimo notebooks](https://marimo.io/) were used in favour of Jupyter Notebooks. Marimo notebooks are Git-friendly reproducible Python scripts (`.py`) that can be edited as a notebook as shared as an app. A core feature of Marimo is its reactivity - _"run one cell and marimo reacts by running affected cells"_. Marimo also provides built-in [interactive elements](https://docs.marimo.io/guides/interactivity/) like dropdowns allowing for more user-engaged reading.
 
 ### To run this notebook
 
@@ -19,16 +21,17 @@ The Women's Super League (WSL) is the top division league for professional women
 
 ## Research Question
 
-1. Who are the *Big Six* of the WSL?
+1. Who are the _Big Six_ of the WSL?
 2. Does kickoff time mean fewer goals scored?
+3. How competitive is the league?
 
-### Who are the *Big Four* of the WSL?
+### Who are the _Big Four_ of the WSL?
 
-**Background:** The *Big Six* is a term used to describe the six wealthiest clubs in the Premier League (i.e., top division league for professional men's football in England) that historically dominate the league standings and possess the largest global fanbases. The Big Six include: Arsenal, Chelsea, Liverpool, Manchester City, Manchester United and Tottenham Hotspur.
+**Background:** The _Big Six_ is a term used to describe the six wealthiest clubs in the Premier League (i.e., top division league for professional men's football in England) that historically dominate the league standings and possess the largest global fanbases. The Big Six include: Arsenal, Chelsea, Liverpool, Manchester City, Manchester United and Tottenham Hotspur.
 
 **Problem:** The Big Six teams are commonly attributed to the men's teams in the Premier League. This Big Six was not officially established for women's teams in the WSL. Currently, the WSL's equivalent of the Big Six mirrors that of the men, but it is unclear whether this is true. Moreover, as time has gone on, the Big Six in the Premier League is being questioned with teams like Tottenham Hotspur struggling against relegation (25/26) and others like Manchester United (24/25) and Chelsea (25/26) not finishing in the top six. As well, the WSL is a smaller league than the Premier League with only 12 teams playing per season with plans to grow to 14 teams in the 26/27 season. Therefore, it would be more suitable for the WSL to have a Big Four rather than a Big Six, in keeping with the Premier League's 30% ratio.
 
-**Purpose:** This research looks to determine the current *Big Four* of the WSL based on data from previous seasons.
+**Purpose:** This research looks to determine the current _Big Four_ of the WSL based on data from previous seasons.
 
 **Analysis:** The WSL's Big Four will be determined by
 
