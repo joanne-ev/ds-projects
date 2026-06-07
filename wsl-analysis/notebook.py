@@ -230,15 +230,28 @@ def _(data, pl, stadium_latitude, stadium_longitude, stadium_region):
             .then(pl.col("Away Team"))
             .when(pl.col("Winner").eq("Home"))
             .then(pl.col("Home Team"))
-            .otherwise(pl.lit("Draw"))
+            .otherwise(None)
             .alias("Winning Team"),
+
             # Identify losing teams
             pl.when(pl.col("Winner").eq("Away"))
             .then(pl.col("Home Team"))
             .when(pl.col("Winner").eq("Home"))
             .then(pl.col("Away Team"))
-            .otherwise(pl.lit("Draw"))
+            .otherwise(None)
             .alias("Losing Team"),
+
+            # Draw (1) — first drawing team
+            pl.when(pl.col("Winner").eq("Draw"))
+            .then(pl.col("Home Team"))
+            .otherwise(None)
+            .alias("Draw (1)"),
+        
+            # Draw (2) — second drawing team
+            pl.when(pl.col("Winner").eq("Draw"))
+            .then(pl.col("Away Team"))
+            .otherwise(None)
+            .alias("Draw (2)"),
         )
         # Drop unnecessary columns
         .drop(["Location", "Date", "Result"])
@@ -259,6 +272,12 @@ def _(data, pl, stadium_latitude, stadium_longitude, stadium_region):
         )
     )
     return (data_new,)
+
+
+@app.cell
+def _(data_new):
+    data_new
+    return
 
 
 @app.cell
@@ -292,6 +311,8 @@ def _(data_new, pl):
                 "Winner",
                 "Winning Team",
                 "Losing Team",
+                "Draw (1)",
+                "Draw (2)",
                 "Goal Difference",
                 "Goals Scored",
             ]
@@ -301,6 +322,12 @@ def _(data_new, pl):
 
     df.head()
     return (df,)
+
+
+@app.cell
+def _():
+    # df.write_csv("data/wsl_data.csv")
+    return
 
 
 @app.cell(column=1, hide_code=True)
